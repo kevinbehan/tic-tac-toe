@@ -63,16 +63,12 @@
   }
   
   function showPlayer(evt){
-    if(player1.className.includes("active"))
-      evt.target.style.backgroundImage = 'url("img/o.svg")'
-    else
-      evt.target.style.backgroundImage = 'url("img/x.svg")'
+    if(player1.className.includes("active")) evt.target.style.backgroundImage = 'url("img/o.svg")'
+    else evt.target.style.backgroundImage = 'url("img/x.svg")'
   }
   function hidePlayer(evt){
-    if(player1.className.includes("active"))
-      evt.target.style.backgroundImage = null
-    else
-      evt.target.style.backgroundImage = null
+    if(player1.className.includes("active")) evt.target.style.backgroundImage = null
+    else evt.target.style.backgroundImage = null
   }
   function paintPlayer(evt){
     if(player1.className.includes("active")){
@@ -138,24 +134,18 @@
   function updateNumericBoard(){
     twoDBoxes.map( (row, j) => {
       row.map( (cell, k) => {
-        if(cell.classList.contains("box-filled-1")) 
-          numericBoard[j][k] = 1
-        else if(cell.classList.contains("box-filled-2")) 
-          numericBoard[j][k] = 2
-        else 
-          numericBoard[j][k] = 0
+        if(cell.classList.contains("box-filled-1")) numericBoard[j][k] = 1
+        else if(cell.classList.contains("box-filled-2")) numericBoard[j][k] = 2
+        else numericBoard[j][k] = 0
       })
     })
   }
   updateNumericBoard()
-  console.log(numericBoard)
   
   function threeInRow(){
     numericBoard.map( (row) => {
-      if(row.join("") === "111")
-        oWins()
-      else if(row.join("") === "222")  
-        xWins()
+      if(row.join("") === "111") oWins()
+      else if(row.join("") === "222") xWins()
     })
   }
   
