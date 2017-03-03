@@ -46,6 +46,7 @@
     player1.classList.add("active")
     attachPlayerDisplayToggle()
     winScreen.style.display = "none"
+    winScreen.className = "screen screen-win"
   }
   //Attach event to newGame
   newGame.addEventListener("click", startNewGame)
@@ -69,9 +70,9 @@
   }
   function hidePlayer(evt){
     if(player1.className.includes("active"))
-      evt.target.style.backgroundImage = "none"
+      evt.target.style.backgroundImage = null
     else
-      evt.target.style.backgroundImage = "none"
+      evt.target.style.backgroundImage = null
   }
   function paintPlayer(evt){
     if(player1.className.includes("active")){
@@ -80,7 +81,7 @@
         evt.target.removeEventListener("mouseenter", showPlayer)
         evt.target.removeEventListener("mouseleave", hidePlayer)
         switchPlayers()
-        checkWin()
+        checkWin(evt)
       }
   
     }
@@ -90,7 +91,7 @@
         evt.target.removeEventListener("mouseenter", showPlayer)
         evt.target.removeEventListener("mouseleave", hidePlayer)
         switchPlayers()
-        checkWin()
+        checkWin(evt)
       }
     }
   }
@@ -118,65 +119,88 @@
   /*===
   Handling win conditions
   ===*/
-  function winOrTie(player){
-    const winScreen = document.querySelector(".screen-win")
-    const winMsg = document.querySelector(".message")
-    winScreen.style.display = "block"
-    if(player === 1){
-      winScreen.classList.add("screen-win-one")
-      winMsg.innerText = "Winner"
-    }
-    else if(player === 2){
-      winScreen.classList.add("screen-win-two")
-      winMsg.innerText = "Winner"
-    }
-    else if(player === 0){
-      winScreen.classList.add("screen-win-tie")
-      winMsg.innerText = "Tie"
-    }
+  
+  /*==
+    updateNumericBoard: array -> twoDArray
+    Takes in a two dimensional array, the array of boxes, and converts each cell into a 
+    numeric value: 0 (empty), 1(O), and 2(X).
+  ==*/
+  const twoDBoxes = [
+      boxes.slice(0, 3),
+      boxes.slice(3, 6),
+      boxes.slice(6)    
+    ]
+  const numericBoard = [
+      boxes.slice(0, 3),
+      boxes.slice(3, 6),
+      boxes.slice(6)    
+    ]
+  function updateNumericBoard(){
+    twoDBoxes.map( (row, j) => {
+      row.map( (cell, k) => {
+        if(cell.classList.contains("box-filled-1")) 
+          numericBoard[j][k] = 1
+        else if(cell.classList.contains("box-filled-2")) 
+          numericBoard[j][k] = 2
+        else 
+          numericBoard[j][k] = 0
+      })
+    })
   }
-  function allBoxesFilled(){
+  updateNumericBoard()
+  console.log(numericBoard)
+  
+  function threeInRow(){
+    numericBoard.map( (row) => {
+      if(row.join("") === "111")
+        oWins()
+      else if(row.join("") === "222")  
+        xWins()
+    })
+  }
+  
+  function threeInCol(rowIndex){
+    let col = numericBoard.reduce( (accum, curr) => accum + curr[rowIndex], "")
+    if(col === "111") oWins()
+    else if(col === "222") xWins()
+  }
+  function threeAcross(){
+    let firstCross = [numericBoard[0][0], numericBoard[1][1], numericBoard[2][2]] //gross code
+    let secondCross = [numericBoard[0][2], numericBoard[1][1], numericBoard[2][0]] //gross code
+    if(firstCross.join("") === "111" || secondCross.join("") === "111")
+      oWins()
+    else if(firstCross.join("") === "222" || secondCross.join("") === "222")
+      xWins()
+  }
+  function checkTie(){
     let count = 0
     boxes.map( (box) => {
       if(hasO(box) || hasX(box)) count++
     })
-    return count === 9
+    if(count === 9) tie()
   }
-  function checkWin(){
-    if(hasO(boxes[0]) && hasO(boxes[1]) && hasO(boxes[2]))
-      winOrTie(1)
-    else if(hasO(boxes[3]) && hasO(boxes[4]) && hasO(boxes[5]))
-      winOrTie(1)
-    else if(hasO(boxes[6]) && hasO(boxes[7]) && hasO(boxes[8]))
-      winOrTie(1)
-    else if(hasO(boxes[0]) && hasO(boxes[3]) && hasO(boxes[6]))
-      winOrTie(1)
-    else if(hasO(boxes[2]) && hasO(boxes[5]) && hasO(boxes[8]))
-      winOrTie(1)
-    else if(hasO(boxes[1]) && hasO(boxes[4]) && hasO(boxes[7]))
-      winOrTie(1)
-    else if(hasO(boxes[0]) && hasO(boxes[4]) && hasO(boxes[8]))
-      winOrTie(1)
-    else if(hasO(boxes[2]) && hasO(boxes[4]) && hasO(boxes[6]))
-      winOrTie(1)
-    else if(hasX(boxes[0]) && hasX(boxes[1]) && hasX(boxes[2]))
-      winOrTie(2)
-    else if(hasX(boxes[3]) && hasX(boxes[4]) && hasX(boxes[5]))
-      winOrTie(2)
-    else if(hasX(boxes[6]) && hasX(boxes[7]) && hasX(boxes[8]))
-      winOrTie(2)
-    else if(hasX(boxes[0]) && hasX(boxes[3]) && hasX(boxes[6]))
-      winOrTie(1)
-    else if(hasX(boxes[2]) && hasX(boxes[5]) && hasX(boxes[8]))
-      winOrTie(1)
-    else if(hasX(boxes[1]) && hasX(boxes[4]) && hasX(boxes[7]))
-      winOrTie(1)
-    else if(hasX(boxes[0]) && hasX(boxes[4]) && hasX(boxes[8]))
-      winOrTie(1)
-    else if(hasX(boxes[2]) && hasX(boxes[4]) && hasX(boxes[6]))
-      winOrTie(1)
-    else if(allBoxesFilled()){
-      winOrTie(0)
-    }
+  
+  function checkWin(evt){
+    let rowIndex = Array.from(evt.target.parentNode.children).indexOf(evt.target) % 3
+    updateNumericBoard()
+    threeInRow()
+    threeInCol(rowIndex)
+    threeAcross()
+    if(winScreen.style.display === "none") checkTie()
   }
+  function oWins(){
+    winScreen.style.display = "block"
+    winScreen.classList.add("screen-win-one")
+    winMsg.innerText = "Winner"
+  }  
+  function xWins(){
+    winScreen.style.display = "block"
+    winScreen.classList.add("screen-win-two")
+    winMsg.innerText = "Winner"
+  }  
+  function tie(){
+    winScreen.style.display = "block"
+    winScreen.classList.add("screen-win-tie")
+    winMsg.innerText = "Tie"
+  }  
 }()
